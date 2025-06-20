@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+.idea/
+install/
+*.pyc
+cmake-build-debug/
+*.gch
+build/
+.vscode/
