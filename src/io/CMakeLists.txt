@@ -1,5 +1,5 @@
 file(GLOB IoSrc "*.cpp")
 add_library(zergio STATIC ${IoSrc})
-target_link_libraries( zergio zerg ${ARROW_LIBRARY} ${ARROW_DEPS_LIBRARY} z)
+target_link_libraries( zergio zerg ${ARROW_LIBRARY} ${ARROW_DEPS_LIBRARY} pthread dl z)
 set_property(TARGET zergio PROPERTY POSITION_INDEPENDENT_CODE ON)
 install(TARGETS zergio RUNTIME DESTINATION lib)

@@ -13,6 +13,14 @@ void MemUsage(double &vm_usage, double &resident_set);
 std::vector<size_t> GetAffinity(pthread_t id = 0);
 std::string GetHostName();
 std::string GetDomainName();
+std::string GetUserName();
+std::string GetProgramPath();
+int EnableCoreDump();
+int DisableCoreDump();
+bool IsProcessExist(long pid);
+std::string GetProcCmdline(pid_t process);
+void BindCore(size_t cpu_id);
+void BindCore(std::vector<size_t>& cpu_id_list);
 
 struct System {
     std::string program;

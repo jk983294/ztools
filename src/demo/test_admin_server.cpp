@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <zerg/tool/admin.h>
 #include <iomanip>
+#include <iostream>
 
 using namespace std;
 using namespace zerg;

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <map>
 
 using std::string;
 
@@ -32,6 +33,8 @@ bool end_with(const std::string& s, const std::string& p);
 std::string GenerateRandomString(size_t length, uint32_t seed = 0);
 std::vector<std::string> expand_names(const std::string& str);
 std::string to_string_high_precision(double value);
+std::string ReplaceStringHolderCopy(const std::string& str, const std::map<std::string, std::string>& holders);
+std::string ReplaceStringHolder(std::string& str, const std::map<std::string, std::string>& holders);
 
 template <class T>
 std::string string_join(const std::vector<T>& v, char delimiter = ' ') {

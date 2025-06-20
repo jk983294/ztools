@@ -29,6 +29,7 @@ FIND_LIBRARY(ARROW_DEPS_LIBRARY libarrow_bundled_dependencies.a HINTS /opt/3rd/a
 
 # Source code
 include_directories(SYSTEM /opt/3rd/arrow/include/)
+include_directories(SYSTEM /opt/3rd/common/include/)
 include_directories(include/)
 
 add_subdirectory(src)

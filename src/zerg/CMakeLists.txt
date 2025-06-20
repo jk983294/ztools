@@ -1,4 +1,4 @@
-file(GLOB ZERGSrc "*.cpp")
+file(GLOB ZERGSrc "*.cpp" "*/*.cpp")
 add_library(zerg STATIC ${ZERGSrc})
 target_link_libraries( zerg stdc++fs z)
 set_property(TARGET zerg PROPERTY POSITION_INDEPENDENT_CODE ON)

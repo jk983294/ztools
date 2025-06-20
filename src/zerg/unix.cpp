@@ -1,11 +1,16 @@
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <ctime>
 #include <fstream>
 #include <ios>
 #include <iostream>
+#include <cstring>
 #include <zerg/unix.h>
+#include <zerg/log.h>
 
 namespace zerg {
 
@@ -43,7 +48,7 @@ void MemUsage(double &vm_usage, double &resident_set) {
     resident_set = rss * page_size_kb;
 }
 
-std::vector<size_t> GetAffinity(pthread_t id = 0) {
+std::vector<size_t> GetAffinity(pthread_t id) {
     std::vector<size_t> ret;
     cpu_set_t cpuSet;
     CPU_ZERO(&cpuSet);
@@ -78,6 +83,75 @@ std::string GetDomainName() {
         return "";
 }
 
+std::string GetUserName() {
+    char name[200];
+    getlogin_r(name, 199);
+    return std::string(name);
+}
+
+std::string GetProgramPath() {
+    char name[256];
+    auto r = readlink("/proc/self/exe", name, sizeof(name));
+    if (r != -1) name[r] = '\0';
+    return std::string(name);
+}
+
+int EnableCoreDump() {
+    struct rlimit core_limits;
+    core_limits.rlim_cur = core_limits.rlim_max = RLIM_INFINITY;
+    setrlimit(RLIMIT_CORE, &core_limits);
+    return 0;
+}
+
+int DisableCoreDump() {
+    struct rlimit core_limits;
+    core_limits.rlim_cur = core_limits.rlim_max = 0;
+    setrlimit(RLIMIT_CORE, &core_limits);
+    return 0;
+}
+
+bool IsProcessExist(long pid) {
+    struct stat sts;
+    std::string path = "/proc/" + std::to_string((long long)pid);
+    return !(stat(path.c_str(), &sts) == -1 && errno == ENOENT);
+}
+
+std::string GetProcCmdline(pid_t process) {
+    std::string ret;
+    unsigned char buffer[4096];
+    char filename[128];
+    memset(filename, 0, 128);
+    sprintf(filename, "/proc/%d/cmdline", process);
+    int fd = open(filename, O_RDONLY);
+    auto nBytesRead = read(fd, buffer, 4096);
+    unsigned char* end = buffer + nBytesRead;
+    for (unsigned char* p = buffer; p < end;) {
+        if (p == buffer)
+            ret += std::string((const char*)p);
+        else
+            ret += " " + std::string((const char*)p);
+        while (*p++)
+            ;
+    }
+    close(fd);
+    return ret;
+}
+
+void BindCore(size_t cpu_id) {
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    CPU_SET(cpu_id, &mask);
+    if (sched_setaffinity(0, sizeof(mask), &mask) != 0) ZLOG_THROW("CPU affinity setting failed.");
+}
+
+void BindCore(std::vector<size_t>& cpu_id_list) {
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+    for (auto node : cpu_id_list) {
+        CPU_SET(node, &mask);
+    }
+    if (sched_setaffinity(0, sizeof(mask), &mask) != 0) ZLOG_THROW("CPU affinity setting failed.");
+}
 
 
 void System::Init() {
@@ -88,7 +162,6 @@ void System::Init() {
     cmd = GetProgramPath();
     user = GetUserName();
     comm = GetProcCmdline(process);
-    timezone = GetZergTimezone();
 }
 
 }

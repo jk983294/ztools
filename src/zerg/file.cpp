@@ -1,3 +1,13 @@
+#include <dirent.h>
+#include <dlfcn.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fstream>
+#include <iostream>
 #include <zerg/io/file.h>
 #include <zerg/log.h>
 #include <zerg/string.h>

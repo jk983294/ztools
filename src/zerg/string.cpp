@@ -11,6 +11,7 @@
 #include <random>
 #include <sstream>
 #include <zerg/string.h>
+#include <zerg/time/clock.h>
 
 using std::string;
 
@@ -262,5 +263,111 @@ std::string to_string_high_precision(double value) {
     memset(buffer, 0, sizeof(buffer));
     snprintf(buffer, sizeof(buffer), "%g", value);
     return std::string(buffer);
+}
+
+std::string ReplaceStringHolderCopy(const std::string& str, const std::map<std::string, std::string>& holders) {
+    std::string ret = str;
+    std::string holder;
+    for (const auto& iter : holders) {
+        holder = "${" + iter.first + "}";
+        ReplaceAll(ret, holder, iter.second);
+    }
+    return ret;
+}
+
+std::string ReplaceStringHolder(std::string& str, const std::map<std::string, std::string>& holders) {
+    std::string holder;
+    for (const auto& iter : holders) {
+        holder = "${" + iter.first + "}";
+        ReplaceAll(str, holder, iter.second);
+    }
+    return str;
+}
+
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str, int ymd, int hms) {
+    std::string year, month, day, timestamp, timestampsss;
+    year = clock.YearToStr();
+    month = clock.MonthToStr();
+    day = clock.DayToStr();
+
+    timestamp = clock.HourToStr() + clock.MinuteToStr() + clock.SecondToStr();
+    timestampsss = timestamp + clock.MillisecondToStr();
+
+    std::string ret = str;
+    ReplaceAll(ret, "${YYYY}", year);
+    ReplaceAll(ret, "${MM}", month);
+    ReplaceAll(ret, "${DD}", day);
+    ReplaceAll(ret, "${YYYYMMDD}", year + month + day);
+    ReplaceAll(ret, "${YYYYMM}", year + month);
+    ReplaceAll(ret, "${MMDD}", month + day);
+    ReplaceAll(ret, "${HHMMSS}", timestamp);
+    ReplaceAll(ret, "${HHMMSSmmm}", timestampsss);
+    return ret;
+}
+
+template <typename T>
+std::string ReplaceSpecialTimeHolder(std::string& str, const Clock<T>& clock) {
+    auto ret = ReplaceSpecialTimeHolderCopy(str, clock);
+    str = ret;
+    return ret;
+}
+
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str) {
+    Clock<> clock;  // use today as default
+    clock.Update();
+    std::string year, month, day, timestamp, timestampsss;
+    year = clock.YearToStr();
+    month = clock.MonthToStr();
+    day = clock.DayToStr();
+
+    timestamp = clock.HourToStr() + clock.MinuteToStr() + clock.SecondToStr();
+    timestampsss = timestamp + clock.MillisecondToStr();
+
+    std::string ret = str;
+    ReplaceAll(ret, "${YYYY}", year);
+    ReplaceAll(ret, "${MM}", month);
+    ReplaceAll(ret, "${DD}", day);
+    ReplaceAll(ret, "${YYYYMMDD}", year + month + day);
+    ReplaceAll(ret, "${YYYYMM}", year + month);
+    ReplaceAll(ret, "${MMDD}", month + day);
+    ReplaceAll(ret, "${HHMMSS}", timestamp);
+    ReplaceAll(ret, "${HHMMSSmmm}", timestampsss);
+    return ret;
+}
+
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::string& datetime,
+                                                const std::string& format) {
+    Clock<> clock(datetime.c_str(), format.c_str());  // use today as default
+
+    std::string year, month, day, timestamp, timestampsss;
+    year = clock.YearToStr();
+    month = clock.MonthToStr();
+    day = clock.DayToStr();
+
+    timestamp = clock.HourToStr() + clock.MinuteToStr() + clock.SecondToStr();
+    timestampsss = timestamp + clock.MillisecondToStr();
+
+    std::string ret = str;
+    ReplaceAll(ret, "${YYYY}", year);
+    ReplaceAll(ret, "${MM}", month);
+    ReplaceAll(ret, "${DD}", day);
+    ReplaceAll(ret, "${YYYYMMDD}", year + month + day);
+    ReplaceAll(ret, "${YYYYMM}", year + month);
+    ReplaceAll(ret, "${MMDD}", month + day);
+    ReplaceAll(ret, "${HHMMSS}", timestamp);
+    ReplaceAll(ret, "${HHMMSSmmm}", timestampsss);
+    return ret;
+}
+
+std::string ReplaceSpecialTimeHolder(std::string& str) {
+    auto ret = ReplaceSpecialTimeHolderCopy(str);
+    str = ret;
+    return ret;
+}
+
+std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format) {
+    auto ret = ReplaceSpecialTimeHolderCopy(str, datetime, format);
+    str = ret;
+    return ret;
 }
 }
