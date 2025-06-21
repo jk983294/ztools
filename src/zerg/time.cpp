@@ -23,20 +23,20 @@ struct tm GetTmFromMicrosecondsSinceEpoch(long ms) {
     return *nowtm;
 }
 
-std::vector<long> GenAllDaysInYear(long year) {
+std::vector<int32_t> GenAllDaysInYear(int32_t year) {
     bool is_leap = (year % 4 == 0 ? (year % 100 == 0 ? (year % 400 == 0) : (true)) : (false));
 
     // start from Jan 1 of this year
-    std::vector<long> day_list;
+    std::vector<int32_t> day_list;
     day_list.reserve(400);
-    long weekday[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
-    long day_of_mon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    int32_t weekday[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+    int32_t day_of_mon[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     if (is_leap) day_of_mon[1] = 29;
     for (int m = 1; m <= 12; ++m) {
         for (int d = 1; d <= day_of_mon[m - 1]; ++d) {
             auto y = year;
             y -= m < 3;
-            long dayofweek = (y + y / 4 - y / 100 + y / 400 + weekday[m - 1] + d) % 7;
+            int32_t dayofweek = (y + y / 4 - y / 100 + y / 400 + weekday[m - 1] + d) % 7;
             if (dayofweek == 0 || dayofweek == 6) continue;
             day_list.push_back(year * 10000 + m * 100 + d);
         }

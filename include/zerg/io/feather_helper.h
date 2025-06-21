@@ -7,7 +7,7 @@ namespace zerg {
 struct FeatherReader {
     FeatherReader() = default;
     static void read(std::string path_, InputData& id, const std::string& x_pattern = "",
-        const std::unordered_map<std::string, bool>& x_names = {});
+        const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false);
 };
 
 bool write_feather(std::string path_, size_t nrow, const std::vector<OutputColumnOption>& cols, bool use_float32 = false);

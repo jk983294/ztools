@@ -110,5 +110,5 @@ uint64_t HumanReadableMillisecond(const char* interval_string);
 std::string replace_time_placeholder(const std::string& str, int d = 0, int32_t t = -1);
 
 int GetNextDate(int cob);
-std::vector<long> GenAllDaysInYear(long year);
+std::vector<int32_t> GenAllDaysInYear(int32_t year);
 }

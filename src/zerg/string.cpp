@@ -219,18 +219,15 @@ std::string GenerateRandomString(size_t length, uint32_t seed) {
 std::vector<std::string> expand_names(const std::string& str) {
     std::vector<std::string> ret;
     auto name_patterns = zerg::split(str, ',');
-    int tmp_num = 0;
     for (auto& pattern : name_patterns) {
         if (pattern.empty()) continue;
         auto p1 = pattern.find('[');
         if (p1 == std::string::npos) {
             ret.push_back(pattern);
-            tmp_num++;
         } else {
             auto p2 = pattern.find(']');
             if (p2 == string::npos || p2 < p1) {
                 ret.push_back(pattern);
-                tmp_num++;
             } else {
                 string prefix = pattern.substr(0, p1);
                 string suffix = pattern.substr(p2 + 1);
@@ -242,15 +239,12 @@ std::vector<std::string> expand_names(const std::string& str) {
                         int end_idx = std::stoi(lets[1]);
                         for (int i = start_idx; i <= end_idx; ++i) {
                             ret.push_back(prefix + std::to_string(i) + suffix);
-                            tmp_num++;
                         }
                     } else {
                         ret.push_back(pattern);
-                        tmp_num++;
                     }
                 } else {
                     ret.push_back(pattern);
-                    tmp_num++;
                 }
             }
         }
@@ -284,7 +278,7 @@ std::string ReplaceStringHolder(std::string& str, const std::map<std::string, st
     return str;
 }
 
-std::string ReplaceSpecialTimeHolderCopy(const std::string& str, int ymd, int hms) {
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const Clock& clock) {
     std::string year, month, day, timestamp, timestampsss;
     year = clock.YearToStr();
     month = clock.MonthToStr();
@@ -305,15 +299,14 @@ std::string ReplaceSpecialTimeHolderCopy(const std::string& str, int ymd, int hm
     return ret;
 }
 
-template <typename T>
-std::string ReplaceSpecialTimeHolder(std::string& str, const Clock<T>& clock) {
+std::string ReplaceSpecialTimeHolder(std::string& str, const Clock& clock) {
     auto ret = ReplaceSpecialTimeHolderCopy(str, clock);
     str = ret;
     return ret;
 }
 
 std::string ReplaceSpecialTimeHolderCopy(const std::string& str) {
-    Clock<> clock;  // use today as default
+    Clock clock;  // use today as default
     clock.Update();
     std::string year, month, day, timestamp, timestampsss;
     year = clock.YearToStr();
@@ -337,7 +330,7 @@ std::string ReplaceSpecialTimeHolderCopy(const std::string& str) {
 
 std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::string& datetime,
                                                 const std::string& format) {
-    Clock<> clock(datetime.c_str(), format.c_str());  // use today as default
+    Clock clock(datetime.c_str(), format.c_str());  // use today as default
 
     std::string year, month, day, timestamp, timestampsss;
     year = clock.YearToStr();

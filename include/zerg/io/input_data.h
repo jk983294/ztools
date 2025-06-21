@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <regex>
 
 namespace zerg {
 struct OutputColumnOption {
@@ -72,6 +73,8 @@ struct DayData {
     std::unordered_map<std::string, double*> x2data;
     std::unordered_map<std::string, std::vector<bool>*> x2bool_data;
     InputData id;
+    bool m_meta_column_only{false};
+    bool m_add_ticktime_for_daily{false};
 
     void build_index();
     bool add_new_column(std::string col);
@@ -89,4 +92,22 @@ struct DailyDatum {
 };
 
 std::shared_ptr<DayData> load_feather_data(const std::string& input_file);
+
+struct X_Data {
+    bool m_read_meta_only{false};
+    std::string x_path_pattern;
+    std::string m_x_pattern;
+    std::unordered_map<std::string, bool> m_x_names; // to read columns
+    std::unordered_map<int, std::string> m_x2files;
+    InputData id;
+    InputData mid;
+    X_Data();
+    void clear();
+    uint64_t read(DayData& d, std::string path);
+    uint64_t read_csv(DayData& d, std::string path);
+    void merge_read(DayData& d, std::string path);
+    void set_x_path_pattern(std::string path);
+    bool check_missing(const std::vector<int>& dates) const;
+    bool is_wanted_column(std::string col, const std::regex& x_regex) const;
+};
 }

@@ -35,6 +35,10 @@ std::vector<std::string> expand_names(const std::string& str);
 std::string to_string_high_precision(double value);
 std::string ReplaceStringHolderCopy(const std::string& str, const std::map<std::string, std::string>& holders);
 std::string ReplaceStringHolder(std::string& str, const std::map<std::string, std::string>& holders);
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str);
+std::string ReplaceSpecialTimeHolder(std::string& str);
+std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::string& datetime, const std::string& format);
+std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format);
 
 template <class T>
 std::string string_join(const std::vector<T>& v, char delimiter = ' ') {

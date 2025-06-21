@@ -92,7 +92,7 @@ inline std::shared_ptr<arrow::Table> read_feather(const std::string& path_) {
 
 
 void FeatherReader::read(std::string path_, InputData& id, const std::string& x_pattern,
-    const std::unordered_map<std::string, bool>& x_names) {
+    const std::unordered_map<std::string, bool>& x_names, bool metaOnly) {
     path_ = zerg::FileExpandUser(path_);
     auto table1 = read_feather(path_);
     auto schema_ = table1->schema();
@@ -115,19 +115,23 @@ void FeatherReader::read(std::string path_, InputData& id, const std::string& x_
 
         if (type_ == "int32") {
             auto* pVec = id.new_int_vec(0);
-            get_array_data<arrow::Int32Array, int>(*pVec, table1, i, id.rows);
+            if (!metaOnly) get_array_data<arrow::Int32Array, int>(*pVec, table1, i, id.rows);
+            id.cols.push_back({3, pVec, f_->name()});
+        } else if (type_ == "int64") {
+            auto* pVec = id.new_int_vec(0);
+            if (!metaOnly) get_array_data<arrow::Int64Array, int>(*pVec, table1, i, id.rows);
             id.cols.push_back({3, pVec, f_->name()});
         } else if (type_ == "double") {
             auto* pVec = id.new_double_vec(0);
-            get_array_data<arrow::DoubleArray, double>(*pVec, table1, i, id.rows);
+            if (!metaOnly) get_array_data<arrow::DoubleArray, double>(*pVec, table1, i, id.rows);
             id.cols.push_back({1, pVec, f_->name()});
         } else if (type_ == "float") {
             auto* pVec = id.new_double_vec(0);
-            get_array_data<arrow::FloatArray, double>(*pVec, table1, i, id.rows);
+            if (!metaOnly) get_array_data<arrow::FloatArray, double>(*pVec, table1, i, id.rows);
             id.cols.push_back({1, pVec, f_->name()});
         } else if (type_ == "bool") {
             auto* pVec = id.new_bool_vec(0);
-            get_array_data_bool(*pVec, table1, i, id.rows);
+            if (!metaOnly) get_array_data_bool(*pVec, table1, i, id.rows);
             id.cols.push_back({5, pVec, f_->name()});
         } else {
             // printf("unknown %s,%s\n", f_->name().c_str(), type_.c_str());
