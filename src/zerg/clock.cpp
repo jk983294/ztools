@@ -22,14 +22,10 @@ static std::vector<int32_t> _gen_trading_days(int year) {
 }
 Clock::Clock(bool _isStrictTradingDay) {
     isStrictTradingDay = _isStrictTradingDay;
-    tradingDayIndex = 0;
     clock_gettime(CLOCK_REALTIME, &core);
     SetTimeInfo();
-
-    if (not isStrictTradingDay) {
-        SetTradingDayInfo(_gen_trading_days(timeinfo.tm_year + 1900));
-        SetFromCore();
-    }
+    SetTradingDayInfo(_gen_trading_days(timeinfo.tm_year + 1900));
+    SetFromCore();
 }
 
 bool Clock::IsTradingDay() const {
@@ -38,19 +34,15 @@ bool Clock::IsTradingDay() const {
 }
 
 Clock::Clock(const std::string& filename) {
-    tradingDayIndex = 0;
     clock_gettime(CLOCK_REALTIME, &core);
     SetTimeInfo();
-
     SetTradingDayInfo(filename);
     SetFromCore();
 }
 
 Clock::Clock(const std::vector<int32_t>& tl) {
-    tradingDayIndex = 0;
     clock_gettime(CLOCK_REALTIME, &core);
     SetTimeInfo();
-
     SetTradingDayInfo(tl);
     SetFromCore();
 }

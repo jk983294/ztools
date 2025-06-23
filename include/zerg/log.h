@@ -1,6 +1,7 @@
 #pragma once
 
 #include <zerg/time/time.h>
+#include <stdexcept>
 #include <unistd.h>
 
 #define ZLOG(...)                                       \

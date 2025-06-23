@@ -1,73 +1,40 @@
 
 #include <fcntl.h>
-#include <pthread.h>
 #include <pwd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <cstdlib>
-#include <iostream>
-#include <vector>
-#include <zerg/time/time.h>
 #include <zerg/log.h>
-#include <zerg/unix.h>
+#include <zerg/time/time.h>
 #include <zerg/tool/admin.h>
+#include <zerg/unix.h>
+#include <iostream>
+#include <zerg/time/clock.h>
 
 using namespace std;
 
 namespace zerg {
-Admin::Admin(const std::string& shm_key_) : shm_key{shm_key_} {
-    if (shm_key.empty()) {
+Admin::Admin(const std::string& shm_key_) {
+    if (shm_key_.empty()) {
         ZLOG_THROW("admin key cannot be empty");
     }
-    shm_name += shm_key;
+    shm_name = shm_key_;
 }
 
-Admin& Admin::OpenForCreate() {
-    auto fd = shm_open(shm_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd == -1) {
-        ZLOG_THROW("cannot create shm for %s", shm_name.c_str());
-    }
-    fchmod(fd, 0777);
-    auto ret = ftruncate(fd, sizeof(AdminShmData));
-    if (ret != 0) {
-        ZLOG_THROW("failed to truncate shm %s", shm_name.c_str());
-    }
-    char* p_mem = (char*)mmap(nullptr, sizeof(AdminShmData), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (p_mem == MAP_FAILED) {
-        ZLOG_THROW("failed to mmap shm %s", shm_name.c_str());
-    }
-    printf("AdminShm %s created with size:%zu\n", shm_name.c_str(), sizeof(AdminShmData));
+bool Admin::OpenForCreate() {
+    Clock clock(true);
+    char* p_mem = CreateShm(shm_name, sizeof(AdminShmData), 1042, clock.DateToInt(), true);
     pAdminShm = reinterpret_cast<AdminShmData*>(p_mem);
-    memset(p_mem, 0, sizeof(AdminShmData));
     pid_t uid = getpid();
     if (uid) {
         pAdminShm->consumerPID = uid;
     }
-    return *this;
+    return pAdminShm != nullptr;
 }
 
-Admin& Admin::OpenForRead() {
-    auto shm_length = sizeof(AdminShmData);
-    auto fd = shm_open(shm_name.c_str(), O_RDWR, 0666);
-    if (fd == -1) {
-        shm_status = false;
-        perror("shm open failed\n");
-        close(fd);
-        return *this;
-    }
-    char* p_mem = (char*)mmap(nullptr, shm_length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (p_mem == MAP_FAILED) {
-        shm_status = false;
-        perror("MEM MAP FAILED\n");
-        return *this;
-    }
-
+bool Admin::OpenForRead() {
+    char* p_mem = LinkShm(shm_name, 1042);
     pAdminShm = reinterpret_cast<AdminShmData*>(p_mem);
-    shm_status = true;
-    ZLOG("AdminShm %s opened, size %zu", shm_name.c_str(), shm_length);
-    return *this;
+    ZLOG("AdminShm %s opened, size %zu", shm_name.c_str(), pAdminShm->header.size);
+    return pAdminShm != nullptr;
 }
 
 void Admin::IssueCmd(const string& cmd) const {
