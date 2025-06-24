@@ -6,15 +6,15 @@
 #include <sys/stat.h>
 
 namespace zerg {
-char* CreateShm(std::string& shm_name, uint64_t size, int32_t magic, int32_t date, bool lock, bool reset) {
+char* CreateShm(const std::string& shm_name, uint64_t size, int32_t magic, int32_t date, bool lock, bool reset) {
     if (size < sizeof(ShmHeader)) {
         ZLOG_THROW("shm size too small %zu", size);
     }
     char* p_mem = nullptr;
     int fd = open(shm_name.c_str(), O_RDWR, 0666);
     if (fd != -1) {
-        ZLOG("Shm already created, linking......");
-        p_mem = (char*)mmap(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        ZLOG("Shm %s already created, linking......", shm_name.c_str());
+        p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (!p_mem) {
             ZLOG_THROW("Cannot mmap header due to %s", strerror(errno));
         }
@@ -37,7 +37,7 @@ char* CreateShm(std::string& shm_name, uint64_t size, int32_t magic, int32_t dat
             ZLOG_THROW("failed to truncate shm %s due to %s", shm_name.c_str(), strerror(errno));
         }
     }
-    p_mem = (char*)mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    p_mem = (char*)mmap64(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (p_mem == MAP_FAILED) {
         ZLOG_THROW("failed to mmap shm %s due to %s", shm_name.c_str(), strerror(errno));
     }
@@ -53,17 +53,19 @@ char* CreateShm(std::string& shm_name, uint64_t size, int32_t magic, int32_t dat
     pHeader->magic = magic;
     pHeader->date = date;
     pHeader->size = size;
+    int32_t pid = getpid();
+    memcpy(&pHeader->pid, &pid, sizeof(int32_t));
     pHeader->creation_time = nanoSinceEpoch();
     ZLOG("shm=%s created date=%d, size=%zu, creation_time=%ld", shm_name.c_str(), date, size, pHeader->creation_time);
     return p_mem;
 }
 
-char* LinkShm(std::string& shm_name, int32_t magic) {
+char* LinkShm(const std::string& shm_name, int32_t magic) {
     auto fd = open(shm_name.c_str(), O_RDWR, 0666);
     if (fd == -1) {
         ZLOG_THROW("Cannot shm_open file %s due to %s", shm_name.c_str(), strerror(errno));
     }
-    char* p_mem = (char*)mmap(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    char* p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (!p_mem) {
         ZLOG_THROW("Cannot mmap file %s", shm_name.c_str());
     }
@@ -73,12 +75,20 @@ char* LinkShm(std::string& shm_name, int32_t magic) {
     }
     munmap(p_mem, sizeof(ShmHeader));
 
-    p_mem = (char*)mmap(nullptr, header.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    p_mem = (char*)mmap64(nullptr, header.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (p_mem == MAP_FAILED) {
         perror("MEM MAP FAILED\n");
         return nullptr;
     }
     ZLOG("link to shm=%s created date=%d, size=%zu, creation_time=%ld", shm_name.c_str(), header.date, header.size, header.creation_time);
     return p_mem;
+}
+
+void ReleaseShm(char* data, uint64_t size) {
+    if (data == nullptr) return;
+    if (size == 0) {
+        size = reinterpret_cast<ShmHeader*>(data)->size;
+    }
+    munmap(data, size);
 }
 }
