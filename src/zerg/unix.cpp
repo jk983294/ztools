@@ -11,6 +11,7 @@
 #include <cstring>
 #include <zerg/unix.h>
 #include <zerg/log.h>
+#include <zerg/string.h>
 
 namespace zerg {
 
@@ -134,6 +135,23 @@ std::string GetProcCmdline(pid_t process) {
             ;
     }
     close(fd);
+    return ret;
+}
+
+std::map<std::string, std::string> ReadEnv2Definition() {
+    std::map<std::string, std::string> ret;
+    char* currentEnv = *environ;
+    for (int i = 1; currentEnv; ++i) {
+        auto env_key_value = split(currentEnv, '=');
+        if (env_key_value.size() == 2) {
+            std::string key{env_key_value.front()};
+            std::string value{env_key_value.back()};
+            if (!value.empty()) {
+                ret["env." + key] = value;
+            }
+        }
+        currentEnv = *(environ + i);
+    }
     return ret;
 }
 

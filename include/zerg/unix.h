@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace zerg {
 
@@ -19,6 +20,7 @@ int EnableCoreDump();
 int DisableCoreDump();
 bool IsProcessExist(long pid);
 std::string GetProcCmdline(pid_t process);
+std::map<std::string, std::string> ReadEnv2Definition();
 void BindCore(size_t cpu_id);
 void BindCore(std::vector<size_t>& cpu_id_list);
 
