@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "zerg/string.h"
+#include "zerg/tool/enc_helper.h"
 
 TEST_CASE("expand_names", "[expand_names]") {
     std::vector<string> ret = zerg::expand_names("f1,f2");
@@ -37,4 +38,11 @@ TEST_CASE("split instrument ID and market", "[utils]") {
     auto [a, b] = zerg::SplitInstrumentID(str);
     REQUIRE(a == "399001");
     REQUIRE(b == "sse");
+}
+
+TEST_CASE("encrypt", "[enc]") {
+    std::string value{"1234567890"};
+    std::string key{"4321"};
+    std::string value1 = zerg::decrypt(zerg::encrypt(value, key), key);
+    REQUIRE(value == value1);
 }

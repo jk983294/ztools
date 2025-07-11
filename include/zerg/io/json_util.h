@@ -28,4 +28,6 @@ inline void json_get(const nlohmann::json& conf, const std::string& key, std::ve
         }
     }
 }
+
+nlohmann::json json_open(const std::string& path);
 }

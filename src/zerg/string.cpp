@@ -363,4 +363,14 @@ std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& dateti
     str = ret;
     return ret;
 }
+
+std::string read_file(const std::string& path) {
+    std::ifstream ifile(path);
+    if (!ifile.good()) {
+        ZLOG_THROW("invalid input %s", path.c_str());
+    }
+    std::ostringstream ss;
+    ss << ifile.rdbuf();
+    return ss.str();
+}
 }

@@ -26,10 +26,12 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 FIND_PACKAGE(OpenMP REQUIRED)
 FIND_LIBRARY(ARROW_LIBRARY libarrow.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
 FIND_LIBRARY(ARROW_DEPS_LIBRARY libarrow_bundled_dependencies.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
+FIND_LIBRARY(CRYPTOPP_LIB libcryptopp.a HINTS /home/kun/system/lib REQUIRED)
 
 # Source code
 include_directories(SYSTEM /opt/3rd/arrow/include/)
 include_directories(SYSTEM /opt/3rd/common/include/)
+include_directories(SYSTEM /home/kun/system/include/)
 include_directories(include/)
 
 add_subdirectory(src)

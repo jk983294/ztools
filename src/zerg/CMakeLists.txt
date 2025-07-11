@@ -1,5 +1,5 @@
 file(GLOB ZERGSrc "*.cpp" "*/*.cpp")
 add_library(zerg STATIC ${ZERGSrc})
-target_link_libraries( zerg stdc++fs dl z)
+target_link_libraries( zerg  ${CRYPTOPP_LIB} stdc++fs dl z)
 set_property(TARGET zerg PROPERTY POSITION_INDEPENDENT_CODE ON)
 install(TARGETS zerg RUNTIME DESTINATION lib)
