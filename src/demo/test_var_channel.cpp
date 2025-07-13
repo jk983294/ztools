@@ -2,6 +2,7 @@
 #include <zerg/tool/channel.h>
 #include <iomanip>
 #include <iostream>
+#include <zerg/log.h>
 
 using namespace std;
 using namespace zerg;
@@ -10,7 +11,8 @@ void help() {
     std::cout << "Program options:" << std::endl;
     std::cout << "  -h                                    list help" << std::endl;
     std::cout << "  -k                                    key" << std::endl;
-    std::cout << "  -y                                    client mode" << std::endl;
+    std::cout << "  -y                                    client mode" << std::endl; 
+    std::cout << "  -r                                    role (pub/sub)" << std::endl;
     std::cout << "demo:" << std::endl;
     std::cout << "server: ./demo_test_var_channel -k key1" << std::endl;
     std::cout << "client: ./demo_test_var_channel -k key1 -y" << std::endl;
@@ -26,16 +28,20 @@ void visit(const MyData& d) {
 }
 
 int main(int argc, char** argv) {
-    bool server_mode = true;
+    string mode = "tube";
+    string role = "publisher";
     string key, cmd;
     int opt;
-    while ((opt = getopt(argc, argv, "hyk:")) != -1) {
+    while ((opt = getopt(argc, argv, "hy:k:r:")) != -1) {
         switch (opt) {
             case 'k':
                 key = std::string(optarg);
                 break;
             case 'y':
-                server_mode = false;
+                mode = std::string(optarg);
+                break;
+            case 'r':
+                role = std::string(optarg);
                 break;
             case 'h':
             default:
@@ -52,8 +58,18 @@ int main(int argc, char** argv) {
     uint32_t n = 10;
 
     ChannelMgr mgr("/tmp/");
-    if (server_mode) {
-        auto* publisher = mgr.RegisterPublisherVar(key, (sizeof(MyData) + sizeof(ShmMsgHeader)) * n + 17);
+    ChannelCoordinator coordinator("/tmp/");
+
+    if (role == "publisher") {
+        Channel* publisher{nullptr};
+        if (mode == "tube") {
+            publisher = coordinator.linkChannel(key, true);
+        } else if (mode == "primaryPub") {
+            publisher = mgr.RegisterPublisherVar(key, (sizeof(MyData) + sizeof(ShmMsgHeader)) * n + 17);
+        
+        } else {
+            ZLOG_THROW("invalid mode %s", mode.c_str());
+        }
         char buffer[sizeof(ShmMsgHeader) + sizeof(MyData)];
         ShmMsgHeader* h = reinterpret_cast<ShmMsgHeader*>(buffer);
         MyData* d = reinterpret_cast<MyData*>(h + 1);
@@ -67,8 +83,16 @@ int main(int argc, char** argv) {
             h->seq_num++;
             sleep(1);
         }
-    } else {
-        auto* subscriber = mgr.RegisterSubscriber(key);
+
+    } else if (role == "subscriber") {
+         Channel* subscriber{nullptr};
+        if (mode == "tube") {
+            subscriber = coordinator.linkChannel(key, false);
+        } else if (mode == "primaryPub") {
+           subscriber = mgr.RegisterSubscriber(key);
+        } else {
+            ZLOG_THROW("invalid mode %s", mode.c_str());
+        }
         int64_t doneIndex = -1;
         const char* data = nullptr;
         while (true) {
@@ -81,19 +105,21 @@ int main(int argc, char** argv) {
                 auto* h = reinterpret_cast<const ShmMsgHeader*>(pd);
                 if(h->seq_num != i) {
                     i = h->seq_num;
-                    printf("caused by channel warp, set to idx=%ld,%ld,%ld\n", i, doneIndex, curIndex);
+                    ZLOG("caused by channel warp, set to idx=%ld,%ld,%ld\n", i, doneIndex, curIndex);
                 }
                 visit(*reinterpret_cast<const MyData*>(h + 1));
                 data = pd + h->msg_len;
             }
 
             if (curIndex < doneIndex) {
-                printf("%ld < %ld, channel %s maybe cleared\n", curIndex, doneIndex, subscriber->name.c_str());
+                ZLOG("%ld < %ld, channel %s maybe cleared\n", curIndex, doneIndex, subscriber->name.c_str());
                 data = nullptr;
             }
             doneIndex = curIndex;
             usleep(100);
         }
+    } else {
+        ZLOG_THROW("invalid role %s", role.c_str());
     }
 
 }

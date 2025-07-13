@@ -373,4 +373,13 @@ std::string read_file(const std::string& path) {
     ss << ifile.rdbuf();
     return ss.str();
 }
+bool write_file(const std::string& path, const std::string& content) {
+    std::ofstream ofile(path, std::ios::trunc);
+    if (ofile.is_open() == false) {
+        ZLOG_THROW("file %s open failed", path.c_str());
+    }
+    ofile << content;
+    ofile.close();
+    return true;
+}
 }

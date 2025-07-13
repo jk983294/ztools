@@ -40,6 +40,7 @@ std::string ReplaceSpecialTimeHolder(std::string& str);
 std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::string& datetime, const std::string& format);
 std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format);
 std::string read_file(const std::string& path);
+bool write_file(const std::string& path, const std::string& content);
 
 template <class T>
 std::string string_join(const std::vector<T>& v, char delimiter = ' ') {

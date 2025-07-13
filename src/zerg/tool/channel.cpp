@@ -86,17 +86,17 @@ const char* Channel::PollVar(const char* data) {
     return data;
 }
 
-Channel::Channel(std::string name_, ChnlCtrlBlock* pcb_, bool isPuber) {
+Channel::Channel(std::string name_, ChnlCtrlBlock* pcb_, ChannelRole role, bool isTubeMode) {
     name = name_;
     pcb = pcb_;
-    m_isPuber = isPuber;
-    if (m_isPuber) {
+    if ((!isTubeMode && role == PUBER) || (isTubeMode && role ==TUBER)) {
         pcb->curr_idx = -1;
         pcb->warp = 1;
     }
     data_start = pdata = (char*)(pcb + 1);
     data_boundary = ((char*)pcb) + pcb->header.size;
 }
+
 Channel::~Channel() {
     ReleaseShm((char*)pcb);
 }
@@ -122,7 +122,7 @@ Channel* ChannelMgr::RegisterPublisherVar(const std::string& name, uint64_t tota
     auto* pcb = (ChnlCtrlBlock*)CreateShm(path_join(m_dir, name), total_size, ChannelMagic, m_date);
     pcb->topic_size = 0;
     pcb->topic_n = 0; // indicate it is variable length version
-    Channel* c = new Channel(name, pcb, true);
+    Channel* c = new Channel(name, pcb, PUBER, false);
     m_n2c[name] = c;
     return c;
 }
@@ -138,7 +138,7 @@ Channel* ChannelMgr::RegisterPublisher(const std::string& name, uint64_t total_s
     auto* pcb = (ChnlCtrlBlock*)CreateShm(path_join(m_dir, name), total_size, ChannelMagic, m_date);
     pcb->topic_size = topic_size;
     pcb->topic_n = topic_n;
-    Channel* c = new Channel(name, pcb, true);
+    Channel* c = new Channel(name, pcb, PUBER, false);
     m_n2c[name] = c;
     return c;
 }
@@ -147,9 +147,60 @@ Channel* ChannelMgr::RegisterSubscriber(const std::string& name) {
     if (itr != m_n2c.end()) {
         return itr->second;
     }
-    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic);
-    Channel* c = new Channel(name, pcb, false);
+    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, true);
+    Channel* c = new Channel(name, pcb, SUBER, false);
     m_n2c[name] = c;
     return c;
 }
+
+
+ChannelCoordinator::ChannelCoordinator(const std::string& dir) {
+    m_dir = dir;
+}
+
+ChannelCoordinator::~ChannelCoordinator() {
+    for (auto& item : m_n2c) {
+        delete item.second;
+    }
+}
+
+void ChannelCoordinator::createChannelVar(const std::string& name, uint64_t total_data_size) {
+    auto itr = m_n2c.find(name);
+    if (itr != m_n2c.end()) {
+        ZLOG_THROW("RegisterPublisherVar twice for %s", name.c_str());
+    }
+    uint64_t total_size = total_data_size + sizeof(ChnlCtrlBlock);
+    auto* pcb = (ChnlCtrlBlock*)CreateShm(path_join(m_dir, name), total_size, ChannelMagic, m_date);
+    pcb->topic_size = 0;
+    pcb->topic_n = 0; // indicate it is variable length version
+    Channel* c = new Channel(name, pcb, TUBER, true);
+    m_n2c[name] = c;
+}
+
+void ChannelCoordinator::createChannel(const std::string& name, uint64_t total_size, uint32_t topic_size, uint32_t topic_n) {
+    if (total_size == 0) {
+        total_size = topic_n * topic_size + sizeof(ChnlCtrlBlock);
+    }
+    auto itr = m_n2c.find(name);
+    if (itr != m_n2c.end()) {
+        ZLOG_THROW("RegisterPublisher twice for %s", name.c_str());
+    }
+    auto* pcb = (ChnlCtrlBlock*)CreateShm(path_join(m_dir, name), total_size, ChannelMagic, m_date);
+    pcb->topic_size = topic_size;
+    pcb->topic_n = topic_n;
+    Channel* c = new Channel(name, pcb, TUBER, true);
+    m_n2c[name] = c;
+}
+
+Channel* ChannelCoordinator::linkChannel(const std::string& name, bool isPub) {
+    auto itr = m_n2c.find(name);
+    if (itr != m_n2c.end()) {
+        return itr->second;
+    }
+    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, !isPub);
+    Channel* c = new Channel(name, pcb, isPub? PUBER:SUBER, true);
+    m_n2c[name] = c;
+    return c;
+}
+
 }

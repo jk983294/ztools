@@ -14,7 +14,7 @@ char* CreateShm(const std::string& shm_name, uint64_t size, int32_t magic, int32
     int fd = open(shm_name.c_str(), O_RDWR, 0666);
     if (fd != -1) {
         ZLOG("Shm %s already created, linking......", shm_name.c_str());
-        p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ, MAP_SHARED, fd, 0);
         if (!p_mem) {
             ZLOG_THROW("Cannot mmap header due to %s", strerror(errno));
         }
@@ -60,12 +60,13 @@ char* CreateShm(const std::string& shm_name, uint64_t size, int32_t magic, int32
     return p_mem;
 }
 
-char* LinkShm(const std::string& shm_name, int32_t magic) {
+char* LinkShm(const std::string& shm_name, int32_t magic, bool isReadOnly) {
     auto fd = open(shm_name.c_str(), O_RDWR, 0666);
     if (fd == -1) {
         ZLOG_THROW("Cannot shm_open file %s due to %s", shm_name.c_str(), strerror(errno));
     }
-    char* p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    char* p_mem = (char*)mmap64(nullptr, sizeof(ShmHeader), PROT_READ, MAP_SHARED, fd, 0);
+    
     if (!p_mem) {
         ZLOG_THROW("Cannot mmap file %s", shm_name.c_str());
     }
@@ -75,7 +76,12 @@ char* LinkShm(const std::string& shm_name, int32_t magic) {
     }
     munmap(p_mem, sizeof(ShmHeader));
 
-    p_mem = (char*)mmap64(nullptr, header.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (isReadOnly) {
+        p_mem = (char*)mmap64(nullptr, header.size, PROT_READ, MAP_SHARED, fd, 0);
+    } else {
+        p_mem = (char*)mmap64(nullptr, header.size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    }
+
     if (p_mem == MAP_FAILED) {
         perror("MEM MAP FAILED\n");
         return nullptr;
