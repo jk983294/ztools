@@ -13,8 +13,8 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#SET(CMAKE_CXX_FLAGS "-std=c++17 -O3 -s -Wall -Werror")
-SET(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror")
+SET(CMAKE_CXX_FLAGS "-std=c++17 -O3 -s -Wall -Werror")
+#SET(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror")
 # SET(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror -fsanitize=address")
 
 ADD_COMPILE_OPTIONS(-Wall -Wextra -pedantic -Wno-unused-parameter)

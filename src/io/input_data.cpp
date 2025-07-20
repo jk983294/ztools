@@ -22,16 +22,67 @@ void DayData::build_index() {
     std::sort(sorted_ticks.begin(), sorted_ticks.end());
 }
 
-bool DayData::add_new_column(std::string col) {
+std::vector<double>* DayData::add_new_column(std::string col) {
     auto itr = std::find(xNames.begin(), xNames.end(), col);
     if (itr == xNames.end()) {
         auto* ptr = id.new_double_vec(x_ukeys->size());
         std::fill(ptr->begin(), ptr->end(), NAN);
         pXs.push_back(ptr);
         xNames.push_back(col);
-        return true;
+        x2data[col] = ptr->data();
+        return ptr;
+    } else {
+      return pXs[itr - xNames.begin()];
     }
-    return false;
+}
+
+std::vector<double>* DayData::merge(const DayData* dd, const std::string& col, const std::string& new_col) {
+  auto itr = dd->x2data.find(col);
+  if (itr == dd->x2data.end()) {
+    ZLOG_THROW("cannot find col %s in src", col.c_str());
+  }
+  const double* src = itr->second;
+  auto d_itr = this->x2data.find(new_col);
+  if (d_itr != this->x2data.end()) {
+    ZLOG_THROW("already find col %s in this", new_col.c_str());
+  }
+  auto* ptr = this->add_new_column(new_col);
+  uint64_t src_len = dd->x_ukeys->size();
+  for (uint64_t i = 0; i < src_len; ++i) {
+    int ukey_ = (*dd->x_ukeys)[i];
+    int tick_ = (*dd->x_ticks)[i];
+    auto u_itr = this->ukey2tick2pos.find(ukey_);
+    if (u_itr == this->ukey2tick2pos.end()) continue;
+    auto t_itr = u_itr->second.find(tick_);
+    if (t_itr == u_itr->second.end()) continue;
+    uint64_t pos = t_itr->second;
+    (*ptr)[pos] = src[i];
+  }
+  return ptr;
+}
+
+void DayData::merge(const DayData* dd, const std::vector<std::string>& cols) {
+  const std::vector<std::string>* pcs = &cols;
+  if (pcs->empty()) {
+    pcs = &dd->xNames;
+  }
+  for (auto& colName : *pcs) {
+    merge(dd, colName, colName);
+  }
+}
+
+bool DayData::save_feather(std::string path, const std::vector<std::string>& cols) {
+    std::vector<std::string> int_col_names = {"ukey", "DataDate", "ticktime"};
+    std::vector<const int*> int_cols = {x_ukeys->data(), x_dates->data(), x_ticks->data()};
+    std::vector<std::string> double_col_names = cols;
+    std::vector<const double*> double_cols;
+    if (double_col_names.empty()) {
+        double_col_names = xNames;
+    }
+    for (auto& cn : double_col_names) {
+        double_cols.push_back(x2data.at(cn));
+    }
+    return write_feather(path, x_ukeys->size(), int_col_names, double_col_names, int_cols, double_cols, true);
 }
 
 InputData::~InputData() {
@@ -60,7 +111,8 @@ void InputData::clear() {
     rows = 0;
 }
 
-std::shared_ptr<DayData> load_feather_data(const std::string& input_file) {
+std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const std::string& x_pattern,
+                                           const std::unordered_map<std::string, bool>& x_names, bool metaOnly) {
   auto pdd = std::make_shared<DayData>();
   auto& d = *pdd;
   if (!zerg::IsFileExisted(input_file)) {
@@ -70,7 +122,7 @@ std::shared_ptr<DayData> load_feather_data(const std::string& input_file) {
   uint64_t rows{0};
   std::vector<OutputColumnOption>* cols{nullptr};
   FeatherReader x_reader1;
-  x_reader1.read(input_file, d.id);
+  x_reader1.read(input_file, d.id, x_pattern, x_names, metaOnly);
   rows = d.id.rows;
   cols = &d.id.cols;
 

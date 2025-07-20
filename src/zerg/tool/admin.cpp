@@ -31,7 +31,8 @@ bool Admin::OpenForCreate() {
 }
 
 bool Admin::OpenForRead() {
-    char* p_mem = LinkShm(shm_name, 1042, true);
+    Clock clock(true);
+    char* p_mem = LinkShm(shm_name, 1042, clock.DateToInt(), true);
     pAdminShm = reinterpret_cast<AdminShmData*>(p_mem);
     ZLOG("AdminShm %s opened, size %zu", shm_name.c_str(), pAdminShm->header.size);
     return pAdminShm != nullptr;

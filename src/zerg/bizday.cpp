@@ -5,7 +5,7 @@
 #include <fstream>
 #include <algorithm>
 
-namespace flow {
+namespace zerg {
 
 void BizDayConfig::init(const std::string& bizDayFile) {
     std::ifstream fs(bizDayFile);

@@ -225,6 +225,21 @@ SoInfo loadSO(const std::string& so_path, char type) {
     return info;
 }
 
+void* internal_create_from_so(const std::string& so_path, const std::string& name) {
+  typedef void* (*create_object_t)(const std::string& name);
+  void* pModule = dlopen(so_path.c_str(), RTLD_LAZY);
+  if (pModule == nullptr) {
+    ZLOG("error: cannot open %s Error msg: %s", so_path.c_str(), dlerror());
+    return nullptr;
+  }
+  auto create_func = (create_object_t)dlsym(pModule, "create");
+  if (create_func == nullptr) {
+    ZLOG("no create function found in module %s", so_path.c_str());
+    return nullptr;
+  }
+  return create_func(name);
+}
+
 bool read_trading_days(const std::string& day_file_path, std::vector<int>& days) {
     days.clear();
     auto path = FileExpandUser(day_file_path);

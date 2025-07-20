@@ -41,6 +41,7 @@ std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::stri
 std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format);
 std::string read_file(const std::string& path);
 bool write_file(const std::string& path, const std::string& content);
+std::vector<std::string> read_file_lines(const std::string &path);
 
 template <class T>
 std::string string_join(const std::vector<T>& v, char delimiter = ' ') {

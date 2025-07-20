@@ -103,8 +103,9 @@ Channel::~Channel() {
 int64_t Channel::GetIndex() { return pcb->curr_idx; }
 int32_t Channel::GetMaxCount() { return pcb->topic_n; }
 
-ChannelMgr::ChannelMgr(const std::string& dir) {
+ChannelMgr::ChannelMgr(const std::string& dir, int32_t tradingDay) {
     m_dir = dir;
+    m_date = tradingDay;
 }
 
 ChannelMgr::~ChannelMgr() {
@@ -147,15 +148,16 @@ Channel* ChannelMgr::RegisterSubscriber(const std::string& name) {
     if (itr != m_n2c.end()) {
         return itr->second;
     }
-    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, true);
+    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, m_date, true);
     Channel* c = new Channel(name, pcb, SUBER, false);
     m_n2c[name] = c;
     return c;
 }
 
 
-ChannelCoordinator::ChannelCoordinator(const std::string& dir) {
+ChannelCoordinator::ChannelCoordinator(const std::string& dir, int32_t tradingDay) {
     m_dir = dir;
+    m_date = tradingDay;
 }
 
 ChannelCoordinator::~ChannelCoordinator() {
@@ -197,7 +199,7 @@ Channel* ChannelCoordinator::linkChannel(const std::string& name, bool isPub) {
     if (itr != m_n2c.end()) {
         return itr->second;
     }
-    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, !isPub);
+    auto* pcb = (ChnlCtrlBlock*)LinkShm(path_join(m_dir, name), ChannelMagic, m_date, !isPub);
     Channel* c = new Channel(name, pcb, isPub? PUBER:SUBER, true);
     m_n2c[name] = c;
     return c;

@@ -363,7 +363,19 @@ std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& dateti
     str = ret;
     return ret;
 }
+std::vector<std::string> read_file_lines(const std::string &config) {
+  std::vector<std::string> lines;
+  std::string iline;
 
+  std::ifstream ifile(config);
+  if (!ifile.is_open()) {
+    throw std::runtime_error("invalid " + config);
+  }
+  while(std::getline(ifile, iline)) {
+    lines.push_back(iline);
+  }
+  return lines;
+}
 std::string read_file(const std::string& path) {
     std::ifstream ifile(path);
     if (!ifile.good()) {

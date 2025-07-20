@@ -88,6 +88,7 @@ struct SoInfo {
 };
 
 SoInfo loadSO(const std::string& so_path, char type = RTLD_LAZY);
+void* internal_create_from_so(const std::string& so_path, const std::string& name);
 
 bool read_trading_days(const std::string& day_file_path, std::vector<int>& days);
 

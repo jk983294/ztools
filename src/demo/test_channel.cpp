@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 #include <zerg/log.h>
+#include <zerg/time/clock.h>
 
 using namespace std;
 using namespace zerg;
@@ -56,9 +57,11 @@ int main(int argc, char** argv) {
     }
 
     uint32_t n = 10;
-
-    ChannelMgr mgr("/tmp/");
-    ChannelCoordinator coordinator("/tmp/");
+    zerg::Clock clock("/dat/ctp/trading_day.txt");
+    int tradingDay = clock.DateToInt();
+    
+    ChannelMgr mgr("/tmp/",tradingDay);
+    ChannelCoordinator coordinator("/tmp/",tradingDay);
 
     if (role == "publisher") {
         Channel* publisher{nullptr};

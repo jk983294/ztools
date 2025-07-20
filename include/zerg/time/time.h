@@ -66,11 +66,11 @@ inline int year_from_cob(int cob) { return cob / 10000; }
 inline int month_from_cob(int cob) { return (cob / 100) % 100; }
 inline int day_from_cob(int cob) { return cob % 100; }
 
-inline uint64_t rdtsc();
-inline uint64_t rdtscp();
+uint64_t rdtsc();
+uint64_t rdtscp();
 
-inline int64_t time_t2hms(const time_t ct);
-inline void split_hms(int hms, int& h, int& m, int& s);
+int64_t time_t2hms(const time_t ct);
+void split_hms(int hms, int& h, int& m, int& s);
 
 /**
  * "23:59:59" to 235959

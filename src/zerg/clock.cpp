@@ -34,6 +34,7 @@ bool Clock::IsTradingDay() const {
 }
 
 Clock::Clock(const std::string& filename) {
+    isStrictTradingDay = true;
     clock_gettime(CLOCK_REALTIME, &core);
     SetTimeInfo();
     SetTradingDayInfo(filename);

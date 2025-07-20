@@ -60,7 +60,7 @@ char* CreateShm(const std::string& shm_name, uint64_t size, int32_t magic, int32
     return p_mem;
 }
 
-char* LinkShm(const std::string& shm_name, int32_t magic, bool isReadOnly) {
+char* LinkShm(const std::string& shm_name, int32_t magic, int32_t date, bool isReadOnly) {
     auto fd = open(shm_name.c_str(), O_RDWR, 0666);
     if (fd == -1) {
         ZLOG_THROW("Cannot shm_open file %s due to %s", shm_name.c_str(), strerror(errno));
@@ -73,6 +73,9 @@ char* LinkShm(const std::string& shm_name, int32_t magic, bool isReadOnly) {
     ShmHeader header = *reinterpret_cast<ShmHeader*>(p_mem);
     if (header.magic != magic) {
         ZLOG_THROW("mmap header magic mismatch %d <> %d", header.magic, magic);
+    }
+    if (header.date != date) {
+        ZLOG_THROW("shm header date not match! %d <> %d", header.date, date);
     }
     munmap(p_mem, sizeof(ShmHeader));
 

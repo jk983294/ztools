@@ -77,7 +77,10 @@ struct DayData {
     bool m_add_ticktime_for_daily{false};
 
     void build_index();
-    bool add_new_column(std::string col);
+    std::vector<double>* add_new_column(std::string col);
+    bool save_feather(std::string path, const std::vector<std::string>& cols);
+    void merge(const DayData* dd, const std::vector<std::string>& cols);
+    std::vector<double>* merge(const DayData* dd, const std::string& col, const std::string& new_col);
 };
 
 struct DailyDatum {
@@ -91,7 +94,8 @@ struct DailyDatum {
     std::unordered_map<int, std::shared_ptr<DayData>> m_dds;
 };
 
-std::shared_ptr<DayData> load_feather_data(const std::string& input_file);
+std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const std::string& x_pattern = "",
+                                           const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false);
 
 struct X_Data {
     bool m_read_meta_only{false};

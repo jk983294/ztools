@@ -60,7 +60,7 @@ struct ChannelMgr {
     std::unordered_map<std::string, Channel*> m_n2c;
     ChnlCtrlBlock* pCtrlBlock{nullptr};
 
-    explicit ChannelMgr(const std::string& dir);
+    explicit ChannelMgr(const std::string& dir, int32_t tradingDay);
     ~ChannelMgr();
 
     Channel* RegisterPublisher(const std::string& name, uint64_t total_size, uint32_t topic_size, uint32_t topic_n);
@@ -75,7 +75,7 @@ struct ChannelCoordinator {
     std::unordered_map<std::string, Channel*> m_n2c;
     ChnlCtrlBlock* pCtrlBlock{nullptr};
 
-    explicit ChannelCoordinator(const std::string& dir);
+    explicit ChannelCoordinator(const std::string& dir, int32_t tradingDay);
     ~ChannelCoordinator();
 
     /**
