@@ -7,6 +7,7 @@
 
 namespace zerg {
 
+#define unlikely(x) __builtin_expect(!!(x), 0)
 inline void Escape(void *p) { asm volatile("" : : "g"(p) : "memory"); }
 
 bool CheckProcessAlive(pid_t id);
