@@ -112,4 +112,5 @@ std::string replace_time_placeholder(const std::string& str, int d = 0, int32_t 
 
 int GetNextDate(int cob);
 std::vector<int32_t> GenAllDaysInYear(int32_t year);
+void check_to(int d = 0);
 }
