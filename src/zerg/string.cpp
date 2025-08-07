@@ -363,6 +363,9 @@ std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& dateti
     str = ret;
     return ret;
 }
+std::string ReplaceSpecialTimeHolder(const std::string& str, int date) {
+    return ReplaceSpecialTimeHolderCopy(str, std::to_string(date), "%Y%m%d");
+}
 std::vector<std::string> read_file_lines(const std::string &config) {
   std::vector<std::string> lines;
   std::string iline;

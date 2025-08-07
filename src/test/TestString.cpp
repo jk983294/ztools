@@ -46,3 +46,7 @@ TEST_CASE("encrypt", "[enc]") {
     std::string value1 = zerg::decrypt(zerg::encrypt(value, key), key);
     REQUIRE(value == value1);
 }
+
+TEST_CASE("ReplaceSpecialTimeHolder", "[ReplaceSpecialTimeHolder]") {
+    REQUIRE(zerg::ReplaceSpecialTimeHolder("${YYYYMMDD}", 20150712) == "20150712");
+}
