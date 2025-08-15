@@ -39,6 +39,7 @@ std::string ReplaceSpecialTimeHolderCopy(const std::string& str);
 std::string ReplaceSpecialTimeHolder(std::string& str);
 std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::string& datetime, const std::string& format);
 std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format);
+std::string ReplaceSpecialTimeHolder(const std::string& str, int date);
 std::string read_file(const std::string& path);
 bool write_file(const std::string& path, const std::string& content);
 std::vector<std::string> read_file_lines(const std::string &path);
