@@ -50,4 +50,19 @@ bool EnsureOneInstanceFromRun(const std::string& program) {
     auto cmdline_ = GetProcCmdline(pid);
     return !(cmdline_ == cmdline);
 }
+
+int ExecRedirect(const char* cmd, std::ostream& ofs) {
+  constexpr int BUF_SIZE = 128;
+  char buffer[BUF_SIZE] = {};
+  auto pipe = popen(cmd, "r");
+  if (!pipe) {
+    return false;
+  }
+  while (!feof(pipe)) {
+    if (fgets(buffer, BUF_SIZE, pipe) != nullptr) {
+      ofs << buffer << std::flush;
+    }
+  }
+  return pclose(pipe);
+}
 }

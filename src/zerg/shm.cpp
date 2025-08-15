@@ -56,7 +56,8 @@ char* CreateShm(const std::string& shm_name, uint64_t size, int32_t magic, int32
     int32_t pid = getpid();
     memcpy(&pHeader->pid, &pid, sizeof(int32_t));
     pHeader->creation_time = nanoSinceEpoch();
-    ZLOG("shm=%s created date=%d, size=%zu, creation_time=%ld", shm_name.c_str(), date, size, pHeader->creation_time);
+    ZLOG("shm=%s created date=%d, size=%zu, creation_time=%s",
+        shm_name.c_str(), date, size, ntime2string(pHeader->creation_time).c_str());
     return p_mem;
 }
 
@@ -89,7 +90,8 @@ char* LinkShm(const std::string& shm_name, int32_t magic, int32_t date, bool isR
         perror("MEM MAP FAILED\n");
         return nullptr;
     }
-    ZLOG("link to shm=%s created date=%d, size=%zu, creation_time=%ld", shm_name.c_str(), header.date, header.size, header.creation_time);
+    ZLOG("link to shm=%s created date=%d, size=%zu, creation_time=%s",
+        shm_name.c_str(), header.date, header.size, ntime2string(header.creation_time).c_str());
     return p_mem;
 }
 

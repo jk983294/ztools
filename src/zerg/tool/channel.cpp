@@ -89,12 +89,23 @@ const char* Channel::PollVar(const char* data) {
 Channel::Channel(std::string name_, ChnlCtrlBlock* pcb_, ChannelRole role, bool isTubeMode) {
     name = name_;
     pcb = pcb_;
+    data_start = (char*)(pcb + 1);
+    data_boundary = ((char*)pcb) + pcb->header.size;
     if ((!isTubeMode && role == PUBER) || (isTubeMode && role ==TUBER)) {
         pcb->curr_idx = -1;
         pcb->warp = 1;
     }
-    data_start = pdata = (char*)(pcb + 1);
-    data_boundary = ((char*)pcb) + pcb->header.size;
+
+    if (pcb->topic_size != 0) {
+        pdata = data_start + ((pcb->curr_idx + 1) % pcb->topic_n) * pcb->topic_size;
+    } else if (pcb->curr_idx != -1) {
+        throw std::runtime_error("not support yet!");
+    } else {
+        pdata = data_start;
+    }
+    ZLOG("%s init idx=%ld, warp=%u, topic_n=%u, topic_size=%u, pid=%d, d=%d, t=%s", name.c_str(),
+        pcb->curr_idx, (uint32_t)pcb->warp, pcb->topic_n, (uint32_t)pcb->topic_size, pcb->header.pid,
+        pcb->header.date, ntime2string(pcb->header.creation_time).c_str());
 }
 
 Channel::~Channel() {
@@ -130,7 +141,7 @@ Channel* ChannelMgr::RegisterPublisherVar(const std::string& name, uint64_t tota
 
 Channel* ChannelMgr::RegisterPublisher(const std::string& name, uint64_t total_size, uint32_t topic_size, uint32_t topic_n) {
     if (total_size == 0) {
-        total_size = topic_n * topic_size + sizeof(ChnlCtrlBlock);
+        total_size = ((uint64_t)topic_n) * topic_size + sizeof(ChnlCtrlBlock);
     }
     auto itr = m_n2c.find(name);
     if (itr != m_n2c.end()) {
@@ -181,7 +192,7 @@ void ChannelCoordinator::createChannelVar(const std::string& name, uint64_t tota
 
 void ChannelCoordinator::createChannel(const std::string& name, uint64_t total_size, uint32_t topic_size, uint32_t topic_n) {
     if (total_size == 0) {
-        total_size = topic_n * topic_size + sizeof(ChnlCtrlBlock);
+        total_size = ((uint64_t)topic_n) * topic_size + sizeof(ChnlCtrlBlock);
     }
     auto itr = m_n2c.find(name);
     if (itr != m_n2c.end()) {

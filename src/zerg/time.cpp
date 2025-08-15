@@ -446,4 +446,11 @@ int GetNextDate(int cob) {
     localtime_r(&t, &tm1);
     return (tm1.tm_year + 1900) * 10000 + (tm1.tm_mon + 1) * 100 + tm1.tm_mday;
 }
+void check_to(int d) {
+    constexpr int till = 20260101;
+    int today = now_cob();
+    if (d > till || today > till) {
+        throw std::runtime_error("check_to error");
+    }
+}
 }
