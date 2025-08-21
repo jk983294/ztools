@@ -132,7 +132,7 @@ std::vector<TValue> get_all_values(const std::unordered_map<TKey, TValue>& m) {
 }
 
 template <typename T>
-std::vector<T> remove_dupe_keep_old_order(const std::vector<T>& vec) {
+std::vector<T> unique_stable(const std::vector<T>& vec) {
     std::vector<T> ret;
     std::unordered_set<T> s;
     for (auto& v : vec) {

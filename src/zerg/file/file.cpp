@@ -321,4 +321,16 @@ void dir_traversal(const std::string& dir, void (*func)(const std::string&), boo
     }
     closedir(d);
 }
+
+bool EnsureDir(const std::string& dir) {
+  if (!dir.empty()) {
+    if (!zerg::IsDir(dir)) {
+      bool suc = zerg::mkdirp(dir) == 0;
+      if (not suc) {
+        ZLOG_THROW("dir %s create failed", dir.c_str());
+      }
+    }
+  }
+  return true;
+}
 }

@@ -73,6 +73,7 @@ time_t GetLastModificationTime(const std::string& pathname);
 off_t GetFileSize(const std::string& pathname);
 
 bool IsDir(const std::string& pathname);
+bool EnsureDir(const std::string& dir);
 
 std::string GetLastLineOfFile(const std::string& pathname);
 

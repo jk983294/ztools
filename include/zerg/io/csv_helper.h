@@ -33,4 +33,8 @@ struct CsvReader {
 
 	static void read(std::string path_, InputData& id, const std::string& x_pattern = "", const std::unordered_map<std::string, bool>& x_names = {});
 };
+
+std::vector<int> read_csv_int(std::string path_, std::string col);
+std::vector<double> read_csv_double(std::string path_, std::string col);
+std::vector<std::string> read_csv_string(std::string path_, std::string col);
 }

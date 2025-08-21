@@ -2,6 +2,7 @@
 #include <zerg/io/file.h>
 #include <algorithm>
 #include <regex>
+#include <csv.h>
 
 namespace zerg {
 std::vector<std::string> CsvReader::split(const std::string& str, char delimiter_) {
@@ -135,4 +136,25 @@ std::vector<int> CsvReader::to_int_vec(const std::vector<string>& vec) {
   return ret;
 }
 
+template <typename T>
+static std::vector<T> read_csv_tmpl(std::string path_, std::string col) {
+  std::vector<T> ret;
+  io::CSVReader<1> infile(FileExpandUser(path_));
+  infile.read_header(io::ignore_extra_column, col);
+  T tmp;
+  while (infile.read_row(tmp)) {
+    ret.push_back(tmp);
+  }
+  return ret;
+}
+
+std::vector<int> read_csv_int(std::string path_, std::string col) {
+  return read_csv_tmpl<int>(path_, col);
+}
+std::vector<double> read_csv_double(std::string path_, std::string col) {
+  return read_csv_tmpl<double>(path_, col);
+}
+std::vector<std::string> read_csv_string(std::string path_, std::string col) {
+  return read_csv_tmpl<std::string>(path_, col);
+}
 }
