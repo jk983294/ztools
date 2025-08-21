@@ -114,4 +114,6 @@ struct X_Data {
     bool check_missing(const std::vector<int>& dates) const;
     bool is_wanted_column(std::string col, const std::regex& x_regex) const;
 };
+
+bool write2file(std::string path_, size_t nrow, const std::vector<OutputColumnOption>& cols);
 }

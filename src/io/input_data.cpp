@@ -6,6 +6,7 @@
 #include <zerg/io/csv_helper.h>
 #include <zerg/io/file.h>
 #include <zerg/log.h>
+#include <zerg/string.h>
 
 namespace zerg {
 void DayData::build_index() {
@@ -375,6 +376,16 @@ void X_Data::merge_read(DayData& d, std::string path) {
         d.xNames.push_back(col.name);
         d.pXs.push_back(pVec);
         // printf("merge %s %zu,%zu\n", col.name.c_str(), merge_cnt, _ukeys->size());
+    }
+}
+
+bool write2file(std::string path_, size_t nrow, const std::vector<OutputColumnOption>& cols) {
+    if (zerg::end_with(path_, "csv")) {
+        return write_csv(path_, nrow, cols);
+    } else if (zerg::end_with(path_, "feather")) {
+        return write_feather(path_, nrow, cols);
+    } else {
+        ZLOG_THROW("unknown file type %s", path_.c_str());
     }
 }
 }

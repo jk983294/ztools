@@ -1,5 +1,6 @@
 #include <zerg/io/csv_helper.h>
 #include <zerg/io/file.h>
+#include <zerg/log.h>
 #include <algorithm>
 #include <regex>
 #include <csv.h>
@@ -156,5 +157,85 @@ std::vector<double> read_csv_double(std::string path_, std::string col) {
 }
 std::vector<std::string> read_csv_string(std::string path_, std::string col) {
   return read_csv_tmpl<std::string>(path_, col);
+}
+
+bool write_csv(std::string path_, size_t nrow, const std::vector<OutputColumnOption>& cols) {
+  path_ = zerg::FileExpandUser(path_);
+  InputData id;
+  auto outfile_tmp = path_ + ".tmp";
+  std::ofstream ofs(outfile_tmp);
+  if (!ofs) {
+    ZLOG_THROW("open %s failed", outfile_tmp.c_str());
+  }
+  for (size_t i = 0; i < cols.size(); i++) {
+    ofs << cols[i].name;
+    if (i + 1 != cols.size()) ofs << ",";
+  }
+
+  for (size_t j = 0; j < nrow; j++) {
+    ofs << "\n";
+    for (size_t i = 0; i < cols.size(); i++) {
+      auto& option = cols[i];
+      if (option.type == 1) {
+        auto* src_vec = reinterpret_cast<double*>(option.data);
+        ofs << src_vec[j];
+      } else if (option.type == 2) {
+        auto* src_vec = reinterpret_cast<float*>(option.data);
+        ofs << src_vec[j];
+      } else if (option.type == 3) {
+        auto* src_vec = reinterpret_cast<int*>(option.data);
+        ofs << src_vec[j];
+      } else if (option.type == 4) {
+        std::vector<std::string>& src_vec = *reinterpret_cast<std::vector<std::string>*>(option.data);
+        ofs << src_vec[j];
+      } else if (option.type == 5) {
+        std::vector<bool>& src_vec = *reinterpret_cast<std::vector<bool>*>(option.data);
+        ofs << src_vec[j];
+      } else if (option.type == 6) {
+        auto* src_vec = reinterpret_cast<uint64_t*>(option.data);
+        ofs << src_vec[j];
+      } else {
+        throw std::runtime_error("write_csv un support type");
+      }
+      if (i + 1 != cols.size()) ofs << ",";
+    }
+  }
+  ofs.close();
+  std::rename(outfile_tmp.c_str(), path_.c_str());
+  printf("write %s success\n", path_.c_str());
+  return true;
+}
+
+bool write_csv(std::string path_, size_t nrow,
+    const std::vector<std::string>& int_col_names, const std::vector<std::string>& double_col_names,
+    const std::vector<const int*>& int_cols, const std::vector<const double*>& double_cols) {
+    if (int_col_names.size() != int_cols.size()) {
+        throw std::runtime_error("expect int cols size equal!");
+    }
+    if (double_col_names.size() != double_cols.size()) {
+        throw std::runtime_error("expect double cols size equal!");
+    }
+    InputData id;
+    std::vector<OutputColumnOption> options;
+    for (size_t i = 0; i < int_col_names.size(); i++) {
+        options.push_back({3, (void*)int_cols[i], int_col_names[i]});
+    }
+
+    for (size_t i = 0; i < double_col_names.size(); i++) {
+        options.push_back({1, (void*)double_cols[i], double_col_names[i]});
+    }
+    return write_csv(path_, nrow, options);
+}
+bool write_csv(std::string path_, const std::vector<int>& ints, const std::vector<double>& doubles) {
+    if (ints.size() != doubles.size()) {
+        throw std::runtime_error("expect int/doubles col size equal!");
+    }
+    return write_csv(path_, ints.size(), {"key"}, {"value"}, {ints.data()}, {doubles.data()});
+}
+bool write_csv(std::string path_, const std::vector<int>& vs) {
+    return write_csv(path_, vs.size(), {"value"}, {}, {vs.data()}, {});
+}
+bool write_csv(std::string path_, const std::vector<double>& vs) {
+    return write_csv(path_, vs.size(), {}, {"value"}, {}, {vs.data()});
 }
 }
