@@ -95,7 +95,7 @@ struct DailyDatum {
 };
 
 std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const std::string& x_pattern = "",
-                                           const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false);
+                                           const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false, bool print = true);
 
 struct X_Data {
     bool m_read_meta_only{false};

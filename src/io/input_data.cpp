@@ -113,7 +113,7 @@ void InputData::clear() {
 }
 
 std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const std::string& x_pattern,
-                                           const std::unordered_map<std::string, bool>& x_names, bool metaOnly) {
+                                           const std::unordered_map<std::string, bool>& x_names, bool metaOnly, bool print) {
   auto pdd = std::make_shared<DayData>();
   auto& d = *pdd;
   if (!zerg::IsFileExisted(input_file)) {
@@ -158,7 +158,9 @@ std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const 
 
   d.build_index();
 
-  std::cout << "loaded " + input_file << std::endl;
+	if (print) {
+  	std::cout << "loaded " + input_file << std::endl;
+	}
   return pdd;
 }
 
