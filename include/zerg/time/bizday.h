@@ -18,6 +18,7 @@ public:
     int lowerBoundIndex(int32_t date) const;
     int32_t next(int32_t date) const;
     int32_t prev(int32_t date) const;
+    std::vector<int32_t> prev_n(int32_t date, int n, bool include_date) const;
     int32_t offset(int32_t date, int offset) const;
     int32_t first_day() const;
     int32_t last_day() const;

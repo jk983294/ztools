@@ -112,4 +112,27 @@ int32_t BizDayConfig::last_day() const {
     return bizDaySorted_.back();
 }
 
+std::vector<int32_t> BizDayConfig::prev_n(int32_t date, int n, bool include_date) const {
+    std::vector<int32_t> ret;
+    auto lb = std::lower_bound(bizDaySorted_.begin(), bizDaySorted_.end(), date);
+    int idx = lb - bizDaySorted_.begin();
+    
+    // If the date is not exactly a business day, start from the previous business day
+    if (lb == bizDaySorted_.end() || *lb != date) {
+        idx--;
+    } else {
+        if (!include_date) {
+            idx--;
+        }
+    }
+    
+    // Collect n business days
+    for (int i = 0; i < n && idx >= 0; ++i) {
+        ret.insert(ret.begin(), bizDaySorted_[idx]);
+        idx--;
+    }
+    
+    return ret;
+}
+
 }

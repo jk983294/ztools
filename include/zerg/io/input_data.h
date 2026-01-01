@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <regex>
+#include <zerg/io/json_util.h>
 
 namespace zerg {
 struct OutputColumnOption {
@@ -96,6 +97,10 @@ struct DailyDatum {
 
 std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const std::string& x_pattern = "",
                                            const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false, bool print = true);
+std::shared_ptr<DayData> load_csv_data(const std::string& input_file, const std::string& x_pattern = "",
+                                           const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false, bool print = true);
+void LoadDailyDatum(DailyDatum& item, const std::vector<int32_t>& dates, const std::unordered_map<std::string, bool>& ignore_cols, int print_every_n = -1);
+void merge_read(zerg::InputData& _id, const nlohmann::json& config);
 
 struct X_Data {
     bool m_read_meta_only{false};

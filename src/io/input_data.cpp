@@ -158,9 +158,9 @@ std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const 
 
   d.build_index();
 
-	if (print) {
+  if (print) {
   	std::cout << "loaded " + input_file << std::endl;
-	}
+  }
   return pdd;
 }
 
