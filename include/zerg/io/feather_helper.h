@@ -3,10 +3,16 @@
 #include <zerg/io/input_data.h>
 #include <regex>
 
+namespace arrow {
+class Table;
+}
+
 namespace zerg {
 struct FeatherReader {
     FeatherReader() = default;
     static void read(std::string path_, InputData& id, const std::string& x_pattern = "",
+        const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false);
+    static void table2id(std::shared_ptr<arrow::Table>& table, InputData& id, const std::string& x_pattern = "",
         const std::unordered_map<std::string, bool>& x_names = {}, bool metaOnly = false);
 };
 

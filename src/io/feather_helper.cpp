@@ -9,6 +9,7 @@
 #include <zerg/io/input_data.h>
 #include <zerg/io/feather_helper.h>
 #include <zerg/io/file.h>
+#include <zerg/log.h>
 #include <regex>
 #include <cstdio>
 #include <iostream>
@@ -90,11 +91,15 @@ inline std::shared_ptr<arrow::Table> read_feather(const std::string& path_) {
 }
 }  // namespace
 
-
 void FeatherReader::read(std::string path_, InputData& id, const std::string& x_pattern,
     const std::unordered_map<std::string, bool>& x_names, bool metaOnly) {
     path_ = zerg::FileExpandUser(path_);
     auto table1 = read_feather(path_);
+    return table2id(table1, id, x_pattern, x_names, metaOnly);
+}
+
+void FeatherReader::table2id(std::shared_ptr<arrow::Table>& table1, InputData& id, const std::string& x_pattern,
+    const std::unordered_map<std::string, bool>& x_names, bool metaOnly) {
     auto schema_ = table1->schema();
     auto col_cnt = table1->num_columns();
     id.rows = table1->num_rows();
@@ -148,6 +153,7 @@ bool write_feather(std::string path_, size_t nrow, const std::vector<OutputColum
     std::vector<std::shared_ptr<arrow::NumericBuilder<arrow::FloatType>>> f_builders;
     std::vector<std::shared_ptr<arrow::NumericBuilder<arrow::Int32Type>>> i_builders;
     std::vector<std::shared_ptr<arrow::NumericBuilder<arrow::UInt64Type>>> ui_builders;
+    std::vector<std::shared_ptr<arrow::BooleanBuilder>> b_builders;
     std::vector<std::shared_ptr<arrow::StringBuilder>> str_builders;
     for (size_t i = 0; i < cols.size(); ++i) {
         auto& option = cols[i];
@@ -205,6 +211,16 @@ bool write_feather(std::string path_, size_t nrow, const std::vector<OutputColum
             str_builders.push_back(tmp_builder);
             arrays.push_back(tmp_a);
             std::ignore = sb_.AddField(arrow::field(option.name, arrow::utf8()));
+        } else if (option.type == 5) {
+            auto tmp_builder = std::make_shared<arrow::BooleanBuilder>();
+            std::vector<bool>& sVec = *reinterpret_cast<std::vector<bool>*>(option.data);
+            std::ignore = tmp_builder->AppendValues(sVec);
+            std::shared_ptr<arrow::Array> tmp_a;
+            std::ignore = tmp_builder->Finish(&tmp_a);
+            tmp_builder->Reset();
+            b_builders.push_back(tmp_builder);
+            arrays.push_back(tmp_a);
+            std::ignore = sb_.AddField(arrow::field(option.name, arrow::boolean()));
         } else if (option.type == 6) {
             auto tmp_builder = std::make_shared<arrow::NumericBuilder<arrow::UInt64Type>>();
             std::ignore = tmp_builder->AppendValues(reinterpret_cast<uint64_t*>(option.data), nrow);
@@ -215,7 +231,7 @@ bool write_feather(std::string path_, size_t nrow, const std::vector<OutputColum
             arrays.push_back(tmp_a);
             std::ignore = sb_.AddField(arrow::field(option.name, arrow::uint64()));
         } else {
-            throw std::runtime_error("write_feather un support type");
+            ZLOG_THROW("write_feather un support type %d", option.type);
         }
     }
 
@@ -223,9 +239,11 @@ bool write_feather(std::string path_, size_t nrow, const std::vector<OutputColum
     std::shared_ptr<arrow::Table> table = arrow::Table::Make(schema, arrays);
 
     std::shared_ptr<arrow::fs::FileSystem> fs = std::make_shared<arrow::fs::LocalFileSystem>();
+    auto options = arrow::ipc::IpcWriteOptions::Defaults();
+    options.codec = arrow::util::Codec::Create(arrow::Compression::type::ZSTD).ValueOrDie();
     auto outfile_tmp = path_ + ".tmp";
     auto output = fs->OpenOutputStream(outfile_tmp).ValueOrDie();
-    auto writer = arrow::ipc::MakeFileWriter(output.get(), table->schema()).ValueOrDie();
+    auto writer = arrow::ipc::MakeFileWriter(output.get(), table->schema(), options).ValueOrDie();
     arrow::Status status_ = writer->WriteTable(*table);
     if (!status_.ok()) {
         printf("write table %s failed, error=%s\n", path_.c_str(), status_.message().c_str());
