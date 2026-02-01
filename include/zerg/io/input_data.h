@@ -71,6 +71,9 @@ struct DayData {
     std::unordered_map<int, std::unordered_map<int, uint64_t>> ukey2tick2pos;
     std::unordered_map<int, std::vector<uint64_t>> tick2pos;
     std::vector<int> sorted_ticks;
+    std::vector<int> m_ukeys;
+    std::unordered_map<int, int> m_ukey2ii;
+    std::unordered_map<int, int> m_tick2ti;
     std::unordered_map<std::string, double*> x2data;
     std::unordered_map<std::string, std::vector<bool>*> x2bool_data;
     InputData id;

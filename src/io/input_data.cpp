@@ -21,6 +21,14 @@ void DayData::build_index() {
 
     std::transform(tick2pos.begin(), tick2pos.end(), std::back_inserter(sorted_ticks), [](auto& i) { return i.first; });
     std::sort(sorted_ticks.begin(), sorted_ticks.end());
+    std::transform(ukey2tick2pos.begin(), ukey2tick2pos.end(), std::back_inserter(m_ukeys), [](auto& i) { return i.first; });
+    std::sort(m_ukeys.begin(), m_ukeys.end());
+    for (size_t ii = 0; ii < m_ukeys.size(); ii++) {
+      m_ukey2ii[m_ukeys[ii]] = ii;
+    }
+    for (size_t ti = 0; ti < sorted_ticks.size(); ti++) {
+      m_tick2ti[sorted_ticks[ti]] = ti;
+    }
 }
 
 std::vector<double>* DayData::add_new_column(std::string col) {
@@ -146,14 +154,19 @@ std::shared_ptr<DayData> load_feather_data(const std::string& input_file, const 
     }
   }
 
-  if (d.x_ukeys == nullptr || d.x_ticks == nullptr || d.x_dates == nullptr) {
-      throw std::runtime_error("no ukey/tick/date column " + input_file);
+  if (d.x_ukeys == nullptr || d.x_dates == nullptr) {
+      throw std::runtime_error("no ukey/date column " + input_file);
   }
   if (d.xNames.empty()) {
-      throw std::runtime_error("empty x column " + input_file);
+    throw std::runtime_error("empty x column " + input_file);
   }
   if (rows == 0) {
-      throw std::runtime_error("empty x table " + input_file);
+    throw std::runtime_error("empty x table " + input_file);
+  }
+  if (d.x_ticks == nullptr) {
+    std::vector<int>* pTicks = d.id.new_int_vec(d.x_ukeys->size());
+    std::fill(pTicks->begin(), pTicks->end(), 150000000);
+    d.x_ticks = pTicks;
   }
 
   d.build_index();

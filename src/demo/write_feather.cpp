@@ -27,24 +27,5 @@ int main() {
     options.push_back({5, &b_vec, "my_bool"});
 
     write_feather(path_, nrOfRows, options, true);
-
-    InputData reader;
-    FeatherReader::read(path_, reader);
-    printf("rows=%zu\n", reader.rows);
-    for (auto& col : reader.cols) {
-        if (col.type == 1) {
-            auto& vec = *reinterpret_cast<std::vector<double>*>(col.data);
-            printf("col %s type=%d data=%f,%f\n", col.name.c_str(), col.type, vec.front(), vec.back());
-        } else if (col.type == 3) {
-            auto& vec = *reinterpret_cast<std::vector<int>*>(col.data);
-            printf("col %s type=%d data=%d,%d\n", col.name.c_str(), col.type, vec.front(), vec.back());
-        } else if (col.type == 4) {
-            auto& vec = *reinterpret_cast<std::vector<std::string>*>(col.data);
-            printf("col %s type=%d data=%s,%s\n", col.name.c_str(), col.type, vec.front().c_str(), vec.back().c_str());
-        } else if (col.type == 5) {
-            auto& vec = *reinterpret_cast<std::vector<bool>*>(col.data);
-            printf("col %s type=%d data=%d,%d\n", col.name.c_str(), col.type, (int)vec.front(), (int)vec.back());
-        }
-    }
     return 0;
 }

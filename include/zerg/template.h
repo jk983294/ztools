@@ -12,6 +12,12 @@
 using std::string;
 
 namespace zerg {
+/**
+ * as_integer/GetParamFromStr/to_string
+ * GetInt32FromStr/GetFloatFromStr/GetDoubleFromStr/GetBoolFromStr
+ * vector:  head/is_identical/is_subset/has_common_element/vec_append/unique_stable/init_container
+ * map: get_all_values/get_all_keys/GetMapValue
+ */
 template <typename Enumeration>
 auto as_integer(Enumeration const value) -> typename std::underlying_type<Enumeration>::type {
     return static_cast<typename std::underlying_type<Enumeration>::type>(value);
@@ -152,6 +158,24 @@ template <typename T, typename T1>
 void init_container(std::vector<T>& c, size_t s, T1 init_value) {
     c.resize(s);
     std::fill(c.begin(), c.end(), init_value);
+}
+
+/**
+ * GetMapValue<int, UkeyContext*>(ukey_map, ukey, false, nullptr);
+ * conflicting types between UkeyContext* and nullptr_t, so need to explicitly write argument
+ */
+template <typename TKey, typename TValue>
+TValue GetMapValue(const std::unordered_map<TKey, TValue>& map,
+  const TKey& key, bool is_throw = true, TValue dft_v = TValue()) {
+  auto itr = map.find(key);
+  if (itr == map.end()) {
+    if (is_throw) {
+      ZLOG_THROW("index not found %s", to_string(key).c_str());
+    } else {
+      return dft_v;
+    }
+  }
+  return itr->second;
 }
 
 }
