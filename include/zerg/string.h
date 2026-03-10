@@ -41,7 +41,7 @@ std::string ReplaceSpecialTimeHolderCopy(const std::string& str, const std::stri
 std::string ReplaceSpecialTimeHolder(std::string& str, const std::string& datetime, const std::string& format);
 std::string ReplaceSpecialTimeHolder(const std::string& str, int date);
 std::string read_file(const std::string& path);
-bool write_file(const std::string& path, const std::string& content);
+bool write_file(const std::string& path, const std::string& content, bool is_append = false);
 std::vector<std::string> read_file_lines(const std::string &path);
 int code_convert(const char* from_charset, const char* to_charset, char* inBuf, size_t inLen, char* outBuf,
                         size_t outLen);
@@ -56,5 +56,9 @@ std::string string_join(const std::vector<T>& v, char delimiter = ' ') {
         }
     }
     return os.str();
+}
+template <class T>
+bool write_file(const std::string& path, const std::vector<T>& v, bool is_append = false) {
+  return write_file(path, string_join(v, '\n'), is_append);
 }
 }

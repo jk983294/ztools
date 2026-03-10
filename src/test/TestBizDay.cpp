@@ -66,9 +66,8 @@ TEST_CASE("BizDay prev_n function", "[bizday]") {
     
     SECTION("prev_n with early trading days, include_date=false") {
         auto result = config.prev_n(20080104, 3, false);
-        REQUIRE(result.size() == 3);
+        REQUIRE(result.size() == 2);
         REQUIRE(result[0] == 20080102);
         REQUIRE(result[1] == 20080103);
-        REQUIRE(result[2] == 20080104);
     }
 }

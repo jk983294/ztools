@@ -375,7 +375,10 @@ std::vector<std::string> read_file_lines(const std::string &config) {
     throw std::runtime_error("invalid " + config);
   }
   while(std::getline(ifile, iline)) {
-    lines.push_back(iline);
+    Trim(iline);
+    if (!iline.empty()) {
+      lines.push_back(iline);
+    }
   }
   return lines;
 }
@@ -388,12 +391,15 @@ std::string read_file(const std::string& path) {
     ss << ifile.rdbuf();
     return ss.str();
 }
-bool write_file(const std::string& path, const std::string& content) {
-    std::ofstream ofile(path, std::ios::trunc);
+bool write_file(const std::string& path, const std::string& content, bool is_append) {
+    std::ofstream ofile;
+    if (is_append) ofile.open(path, std::ios_base::out | std::ios_base::app);
+    else ofile.open(path, std::ios::trunc);
     if (ofile.is_open() == false) {
         ZLOG_THROW("file %s open failed", path.c_str());
     }
     ofile << content;
+    if (is_append) ofile << '\n';
     ofile.close();
     return true;
 }
