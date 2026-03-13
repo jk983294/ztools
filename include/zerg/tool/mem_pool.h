@@ -62,6 +62,34 @@ struct MemPool {
   std::vector<std::vector<TData> *> m_barn;
 };
 
+class StackAllocator {
+  size_t capacity{0};
+  char* buffer{nullptr};
+  char* top{nullptr};
+    
+public:
+  StackAllocator() = default;
+  StackAllocator(size_t size) { init(size); }
+  void init(size_t size) {
+    capacity = size;
+    buffer = new char[size];
+    top = buffer;
+  }
+  
+  ~StackAllocator() { delete[] buffer; }
+  
+  void* allocate(size_t size) {
+    if (top + size > buffer + capacity) return nullptr;
+    void* ptr = top;
+    top += size;
+    return ptr;
+  }
+  
+  void* mark() const { return top; }
+  void deallocate(void* marker) { top = static_cast<char*>(marker); }
+  void clear() { top = buffer; }
+};
+
 template <typename TPool>
 struct PoolHolder {
   PoolHolder(int thread_num) {
