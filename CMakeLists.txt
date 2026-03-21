@@ -37,4 +37,16 @@ include_directories(include/)
 add_subdirectory(src)
 
 install(DIRECTORY include/ DESTINATION include)
-
+install(DIRECTORY cmake/ DESTINATION cmake)
+install(
+    DIRECTORY script/
+    DESTINATION script
+    FILE_PERMISSIONS 
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+    DIRECTORY_PERMISSIONS 
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+)

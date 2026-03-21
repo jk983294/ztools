@@ -1,0 +1,32 @@
+#pragma once
+#include <map>
+#include <string>
+#include <unordered_map>
+
+namespace zerg {
+constexpr const char* _GIT_COMMIT_HASH = "@GIT_COMMIT_HASH@";
+constexpr const char* _GIT_COMMIT_DATE = "@GIT_COMMIT_DATE@";
+constexpr const char* _GIT_BRANCH = "@GIT_BRANCH@";
+
+constexpr const char* _BUILD_TIMESTAMP = "@BUILD_TIMESTAMP@";
+
+inline const std::unordered_map<std::string, std::string>& GetExternalDeps() {
+  static const std::unordered_map<std::string, std::string> deps = { 
+@DEPENDENCY_LIST@ 
+  };
+  return deps;
+}
+inline void PrintVersionInfo() {
+  printf("version info:\n");
+  printf(" git commit: %s\n", _GIT_COMMIT_HASH);
+  printf(" git date: %s\n", _GIT_COMMIT_DATE);
+  printf(" git branch: %s\n", _GIT_BRANCH);
+  printf(" build time: %s\n", _BUILD_TIMESTAMP);
+  printf("\n");
+  printf("External dependencies (externals.yml):\n");
+  for (const auto& dep : GetExternalDeps()) {
+    printf(" %-35s %s\n", (dep.first + ":").c_str(), dep.second.c_str());
+  }
+  printf("\n");
+}
+}
