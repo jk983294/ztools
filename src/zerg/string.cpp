@@ -158,6 +158,19 @@ std::string get_bool_string(int value) {
         return "false";
 }
 
+std::string random_string(int n) {
+  const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
+
+  std::string _str(n, ' ');
+  for (auto& c : _str) {
+    c = charset[dist(gen)];
+  }
+  return _str;
+}
+
 std::vector<std::string> split(const std::string& str, char delimiter) {
     std::vector<std::string> result;
     size_t start = 0;

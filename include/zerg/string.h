@@ -28,6 +28,7 @@ std::string TrimCopy(const std::string& s);
 void text_word_warp(const std::string& text, size_t maxLineSize, std::vector<std::string>& lines);
 std::string get_bool_string(bool value);
 std::string get_bool_string(int value);
+std::string random_string(int n);
 bool start_with(const std::string& s, const std::string& p);
 bool end_with(const std::string& s, const std::string& p);
 std::string GenerateRandomString(size_t length, uint32_t seed = 0);

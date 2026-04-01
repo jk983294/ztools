@@ -333,4 +333,11 @@ bool EnsureDir(const std::string& dir) {
   }
   return true;
 }
+
+bool MvFile(const std::string& from, const std::string& to) {
+  if (std::rename(from.c_str(), to.c_str()) != 0) {
+    ZLOG_THROW("mv from %s to %s failed", from.c_str(), to.c_str());
+  }
+  return true;
+}
 }

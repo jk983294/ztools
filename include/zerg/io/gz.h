@@ -2,6 +2,8 @@
 
 #include <zlib.h>
 #include <string>
+#include <vector>
+#include <zerg/log.h>
 
 /**
  * typical usage:
@@ -38,7 +40,7 @@
         }
     }
  */
-
+namespace zerg {
 template <typename T>
 struct GzBufferReader {
     T* buffer{nullptr};
@@ -162,3 +164,41 @@ struct GzBufferWriter {
 private:
     void init() { buffer = new T[len]; }
 };
+
+inline std::vector<std::string> read_gz_file(const std::string& file_name) {
+  std::vector<std::string> lines;
+  gzFile gz_file = gzopen(file_name.c_str(), "rb");
+  if (!gz_file) {
+    ZLOG_THROW("Failed to open gz file: %s", file_name.c_str());
+  }
+
+  char buffer[8192];
+  std::string current_line;
+  int bytes_read;
+  while ((bytes_read = gzread(gz_file, buffer, sizeof(buffer))) > 0) {
+    for (int i = 0; i < bytes_read; ++i) {
+      if (buffer[i] == '\n') {
+        // Trim trailing \r if present (Windows line endings)
+        if (!current_line.empty() && current_line.back() == '\r') {
+          current_line.pop_back();
+        }
+        lines.push_back(current_line);
+        current_line.clear();
+      } else if (buffer[i] != '\r') {
+        current_line += buffer[i];
+      }
+    }
+  }
+
+  // Handle last line if file doesn't end with newline
+  if (!current_line.empty()) {
+    if (current_line.back() == '\r') {
+      current_line.pop_back();
+    }
+    lines.push_back(current_line);
+  }
+
+  gzclose(gz_file);
+  return lines;
+}
+}

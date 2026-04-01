@@ -61,6 +61,7 @@ int IsFdDeleted(int fd);
 std::string Dirname(const std::string& fullname);
 
 std::string Basename(const std::string& fullname);
+bool MvFile(const std::string& from, const std::string& to);
 
 bool IsDirReadable(const std::string& dirname);
 

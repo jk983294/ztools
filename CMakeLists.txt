@@ -13,20 +13,20 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-SET(CMAKE_CXX_FLAGS "-std=c++17 -O3 -s -Wall -Werror")
-#SET(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror")
-# SET(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror -fsanitize=address")
+set(CMAKE_CXX_FLAGS "-std=c++17 -O3 -s -Wall -Werror")
+# set(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror")
+# set(CMAKE_CXX_FLAGS "-std=c++17 -g -Wall -Werror -fsanitize=address")
 
-ADD_COMPILE_OPTIONS(-Wall -Wextra -pedantic -Wno-unused-parameter)
+add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter)
 
 message ("cxx Flags: " ${CMAKE_CXX_FLAGS})
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-FIND_PACKAGE(OpenMP REQUIRED)
-FIND_LIBRARY(ARROW_LIBRARY libarrow.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
-FIND_LIBRARY(ARROW_DEPS_LIBRARY libarrow_bundled_dependencies.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
-FIND_LIBRARY(CRYPTOPP_LIB libcryptopp.a HINTS /home/kun/system/lib REQUIRED)
+find_package(OpenMP REQUIRED)
+find_library(ARROW_LIBRARY libarrow.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
+find_library(ARROW_DEPS_LIBRARY libarrow_bundled_dependencies.a HINTS /opt/3rd/arrow/lib/ REQUIRED)
+find_library(CRYPTOPP_LIB libcryptopp.a HINTS /home/kun/system/lib REQUIRED)
 
 # Source code
 include_directories(SYSTEM /opt/3rd/arrow/include/)
