@@ -11,8 +11,11 @@ namespace zerg {
 int WriteProgramPid(const std::string& program) {
     pid_t pid = getpid();
     std::ofstream ofs;
-    ofs.open(std::string("/opt/run/") + program + std::string(".pid"));
-    if (ofs.fail()) ZLOG_THROW("WriteProgramPid failed: %s", strerror(errno));
+    auto dir = FileExpandUser("~/run/");
+    EnsureDir(dir);
+    std::string filename = dir + program + std::string(".pid");
+    ofs.open(filename);
+    if (ofs.fail()) ZLOG_THROW("WriteProgramPid %s failed: %s", filename.c_str(), strerror(errno));
     ofs << pid;
     ofs.close();
     return 0;
@@ -20,7 +23,8 @@ int WriteProgramPid(const std::string& program) {
 
 long GetProgramPid(const std::string& program) {
     long pid = 0;
-    std::string filename = std::string("/opt/run/") + program + std::string(".pid");
+    std::string filename = std::string("~/run/") + program + std::string(".pid");
+    filename = FileExpandUser(filename);
     if (!IsFileExisted(filename)) return pid;
     std::ifstream ofs;
     ofs.open(filename);
@@ -41,7 +45,8 @@ bool EnsureOneInstance(const std::string& program) {
 }
 
 bool EnsureOneInstanceFromRun(const std::string& program) {
-    std::string filename = std::string("/opt/run/") + program + std::string(".run");
+    std::string filename = std::string("~/run/") + program + std::string(".run");
+    filename = FileExpandUser(filename);
     if (!IsFileExisted(filename)) return true;
     INIReader reader(filename);
     auto pid = reader.GetIntegerOrThrow(program, "process");
