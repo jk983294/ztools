@@ -56,8 +56,14 @@ TEST_CASE("mem pool deallocate and reuse", "[mem pool]") {
 
     TestData* ptr2 = pool.allocate();
     REQUIRE(ptr2 == ptr1);  // Should get the same pointer from free list
-    REQUIRE(ptr2->a == 100);  // Data should still be there (not reset)
-    REQUIRE(ptr2->b == 200);
+
+    // Note: data is NOT preserved after deallocate — the intrusive free list
+    // stores the next pointer in the first sizeof(void*) bytes of the block,
+    // which overwrites ptr1->a. Write new data and verify the block is usable.
+    ptr2->a = 300;
+    ptr2->b = 400;
+    REQUIRE(ptr2->a == 300);
+    REQUIRE(ptr2->b == 400);
 
     pool.deallocate(ptr2);
 }

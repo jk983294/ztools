@@ -12,9 +12,9 @@ TEST_CASE("topo sort", "[DependencyTree]") {
     auto ind2 = tree.AddNode(new int(1));
     auto ind3 = tree.AddNode(new int(2));
     auto ind4 = tree.AddNode(new int(3));
-    auto ind5 = tree.AddNode(new int(4));
-    auto ind6 = tree.AddNode(new int(5));
-    auto ind7 = tree.AddNode(new int(6));
+    tree.AddNode(new int(4));
+    tree.AddNode(new int(5));
+    tree.AddNode(new int(6));
 
     tree.AddDependency(ind2, ind3);
     tree.AddDependency(ind3, ind1);
